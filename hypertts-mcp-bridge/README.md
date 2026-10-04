@@ -35,10 +35,17 @@ checked against HyperTTS v3.6.0's source
 **Caveat:** these are HyperTTS's internal APIs, not a published/stable
 public interface. A future HyperTTS release could rename or restructure
 them. If the bridge starts erroring after a HyperTTS update, open
-`hypertts_addon/hypertts.py` in your installed copy
-(`~/.local/share/Anki2/addons21/111623432/hypertts_addon/hypertts.py`) and
-check whether `get_preset_list`, `load_preset`, or `process_note_audio`
-changed shape, then adjust `anki_addon/__init__.py` to match.
+`hypertts_addon/hypertts.py` in your installed copy of HyperTTS
+(add-on folder `111623432`) and check whether `get_preset_list`,
+`load_preset`, or `process_note_audio` changed shape, then adjust
+`anki_addon/__init__.py` to match. The add-on folder lives at:
+
+- macOS: `~/Library/Application Support/Anki2/addons21/111623432/`
+- Linux: `~/.local/share/Anki2/addons21/111623432/`
+- Windows: `%APPDATA%\Anki2\addons21\111623432\`
+
+See [DEVELOPMENT.md](DEVELOPMENT.md) for exactly which internals are used and
+how to re-verify them.
 
 ## Setup
 
@@ -126,6 +133,16 @@ curl -X POST http://127.0.0.1:8766/generate \
 
 Get a real `note_id` from Anki's Browser (right-click a note's row →
 "Info", or add a "Note ID" column).
+
+Every response is JSON with an `"ok"` field; failures also carry `"error"`.
+
+| Status | Meaning |
+| --- | --- |
+| 200 | Success. `/generate` also returns `target_field`, `source_text`, `processed_text`, `sound_file`. |
+| 400 | Caller mistake: malformed body, no such note, unknown preset, the note lacks the preset's fields, empty source text, or a `text_override` that is blank or over `max_text_override_chars`. |
+| 401 | `api_key` is set and `X-Api-Key` is missing or wrong. |
+| 404 | Unknown endpoint. |
+| 500 | Anything else, such as a TTS service failure or HyperTTS not being enabled. |
 
 ## Security
 
