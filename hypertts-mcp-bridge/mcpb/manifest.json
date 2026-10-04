@@ -1,0 +1,72 @@
+{
+  "manifest_version": "0.2",
+  "name": "hypertts-mcp-bridge",
+  "display_name": "HyperTTS MCP Bridge",
+  "version": "0.1.0",
+  "description": "Generate audio for an Anki note by triggering a HyperTTS preset.",
+  "long_description": "Exposes one narrow HyperTTS capability to an MCP client: \"generate audio for note N using preset P\", writing the [sound:...] tag into whatever field that preset targets - the same thing HyperTTS's own \"Apply To Notes\" button does. Requires Anki running with the HyperTTS add-on and the companion \"HyperTTS MCP Bridge\" Anki add-on (which serves a localhost HTTP bridge this server calls).",
+  "author": {
+    "name": "Byron Appelt"
+  },
+  "documentation": "https://github.com/Vocab-Apps/anki-hyper-tts",
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/server/index.js"
+      ],
+      "env": {
+        "HYPERTTS_BRIDGE_URL": "${user_config.bridge_url}",
+        "HYPERTTS_BRIDGE_KEY": "${user_config.api_key}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "list_hypertts_presets",
+      "description": "List the HyperTTS presets configured in the user's Anki, with id and name."
+    },
+    {
+      "name": "generate_hypertts_audio",
+      "description": "Generate audio for a single Anki note using a HyperTTS preset."
+    }
+  ],
+  "tools_generated": false,
+  "keywords": [
+    "anki",
+    "hypertts",
+    "tts",
+    "text-to-speech",
+    "audio"
+  ],
+  "license": "MIT",
+  "user_config": {
+    "bridge_url": {
+      "type": "string",
+      "title": "Bridge URL",
+      "description": "Address the Anki add-on's HTTP bridge listens on. Change only if you changed \"host\"/\"port\" in the Anki add-on's config.",
+      "default": "http://127.0.0.1:8766",
+      "required": false
+    },
+    "api_key": {
+      "type": "string",
+      "title": "Bridge API key",
+      "description": "Only needed if you set \"api_key\" in the Anki add-on's config. Leave blank otherwise.",
+      "default": "",
+      "sensitive": true,
+      "required": false
+    }
+  },
+  "compatibility": {
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ],
+    "runtimes": {
+      "node": ">=18.0.0"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+
+# Build output
+dist/
+*.mcpb
+*.ankiaddon
+
+# Stale pre-config snapshot of the project (Aug 29); superseded by hypertts-mcp-bridge/
+/hypertts-mcp-bridge.zip
