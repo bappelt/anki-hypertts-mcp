@@ -165,8 +165,6 @@ exist inside a running Anki, so testing is manual against a live Anki.
 
 ## Open items
 
-- MCP server: report a friendly "is Anki running?" message when the bridge
-  is unreachable, instead of a raw fetch error.
 - MCP server: return tool failures as results with `isError: true` rather
   than throwing JSON-RPC errors.
 

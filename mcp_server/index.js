@@ -35,27 +35,50 @@ function headers() {
   return h;
 }
 
-async function bridgeGet(path) {
-  const res = await fetch(`${BRIDGE_URL}${path}`, { headers: headers() });
-  const data = await res.json();
+/** Low-level error codes from a failed fetch (Node nests them under `cause`,
+ *  and an AggregateError when several addresses were tried). */
+function networkErrorCodes(err) {
+  const cause = err?.cause;
+  const codes = [cause?.code, ...(cause?.errors ?? []).map((e) => e?.code)];
+  return [...new Set(codes.filter(Boolean))];
+}
+
+async function bridgeRequest(path, init = {}) {
+  const url = `${BRIDGE_URL}${path}`;
+  let res;
+  try {
+    res = await fetch(url, { ...init, headers: headers() });
+  } catch (err) {
+    // fetch only throws when no HTTP response came back at all, which in
+    // practice means Anki (or the bridge add-on) isn't running.
+    const codes = networkErrorCodes(err);
+    throw new Error(
+      `Can't reach the HyperTTS MCP Bridge at ${BRIDGE_URL}. Make sure Anki ` +
+        `is running with a profile open and the HyperTTS MCP Bridge add-on ` +
+        `enabled.` +
+        (codes.length ? ` (${codes.join(", ")})` : ` (${err.message})`)
+    );
+  }
+
+  let data;
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error(
+      `Got a non-JSON response (HTTP ${res.status}) from ${url}. Something ` +
+        `other than the HyperTTS MCP Bridge may be using that port; check ` +
+        `HYPERTTS_BRIDGE_URL and the add-on's "port" setting.`
+    );
+  }
   if (!res.ok || data.ok === false) {
-    throw new Error(data.error || `bridge request failed: ${res.status}`);
+    throw new Error(data.error || `bridge request failed: HTTP ${res.status}`);
   }
   return data;
 }
 
-async function bridgePost(path, body) {
-  const res = await fetch(`${BRIDGE_URL}${path}`, {
-    method: "POST",
-    headers: headers(),
-    body: JSON.stringify(body),
-  });
-  const data = await res.json();
-  if (!res.ok || data.ok === false) {
-    throw new Error(data.error || `bridge request failed: ${res.status}`);
-  }
-  return data;
-}
+const bridgeGet = (path) => bridgeRequest(path);
+const bridgePost = (path, body) =>
+  bridgeRequest(path, { method: "POST", body: JSON.stringify(body) });
 
 /** Resolve a preset argument that may be an id or a human-readable name. */
 async function resolvePresetId(presetArg) {
