@@ -10,7 +10,7 @@
 # for `npm ci` and `npx @anthropic-ai/mcpb`.
 set -euo pipefail
 
-here="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # hypertts-mcp-bridge/
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
 stage="$here/dist/mcpb-stage"
 out="$here/dist/hypertts-mcp-bridge.mcpb"
 

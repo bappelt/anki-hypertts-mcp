@@ -1,8 +1,7 @@
 # CLAUDE.md
 
-The project lives in `hypertts-mcp-bridge/`. Read its `README.md` (setup,
-HTTP API) and `DEVELOPMENT.md` (HyperTTS internals, design decisions,
-testing, open items) before changing code.
+Read `README.md` (setup, HTTP API) and `DEVELOPMENT.md` (HyperTTS internals,
+design decisions, testing, open items) before changing code.
 
 - `anki_addon/__init__.py` calls **unpublished HyperTTS internals**, verified
   against HyperTTS 3.6.0. Before changing those calls, re-read the installed
@@ -16,4 +15,4 @@ testing, open items) before changing code.
 - Real generation overwrites a note field and spends TTS credits. Only run it
   on a throwaway test note (see DEVELOPMENT.md > Testing), never a user's card.
 - After changing `mcp_server/` or `mcpb/manifest.json`, rebuild with
-  `hypertts-mcp-bridge/mcpb/build.sh` and reinstall the `.mcpb` in Claude Desktop.
+  `mcpb/build.sh` and reinstall the `.mcpb` in Claude Desktop.

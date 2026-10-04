@@ -102,7 +102,7 @@ Code's `claude mcp add`, etc.), pointing at the absolute path to `index.js`:
   "mcpServers": {
     "hypertts-bridge": {
       "command": "node",
-      "args": ["/absolute/path/to/hypertts-mcp-bridge/mcp_server/index.js"],
+      "args": ["/absolute/path/to/anki-hypertts-mcp/mcp_server/index.js"],
       "env": { "HYPERTTS_BRIDGE_KEY": "only-if-you-set-one" }
     }
   }
