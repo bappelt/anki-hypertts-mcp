@@ -12,6 +12,3 @@ node_modules/
 dist/
 *.mcpb
 *.ankiaddon
-
-# Stale pre-config snapshot of the project (Aug 29); superseded by this repo
-/hypertts-mcp-bridge.zip
