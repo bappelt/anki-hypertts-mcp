@@ -102,8 +102,9 @@ exist inside a running Anki, so testing is manual against a live Anki.
 
 ### Live test procedure
 
-1. Copy `anki_addon/` into the Anki add-ons folder (see README), with
-   HyperTTS installed, and start Anki.
+1. Install the add-on into Anki with HyperTTS installed (see README), and
+   start Anki. For quick iteration, copying `anki_addon/`'s files into
+   `addons21/hypertts_mcp_bridge/` and restarting also works.
 2. Exercise the bridge with the curl commands in the README, including the
    error paths: unknown note id, blank `text_override`, missing `note_id`.
    Each should return 400 with a readable message.
@@ -144,19 +145,30 @@ exist inside a running Anki, so testing is manual against a live Anki.
   to `dist/hypertts-mcp-bridge.mcpb`. The bundle is unsigned; signing is
   optional and needs a certificate. `.mcpb` is Claude-Desktop-only; other
   clients run `mcp_server/index.js` directly.
-- **Anki add-on (`.ankiaddon`):** not yet automated. Zip the *contents* of
-  `anki_addon/` (not the folder itself), excluding `__pycache__`, and give it
-  a `.ankiaddon` extension.
+- **Anki add-on:** `python3 build_addon.py` writes
+  `dist/hypertts_mcp_bridge.ankiaddon`, following the pattern of
+  [anki-quick-image-search](https://github.com/bappelt/anki-quick-image-search).
+  It zips the files listed in `FILES` and generates `manifest.json` at build
+  time, so there is no static manifest in `anki_addon/`. Things to know:
+  - `package` is required for file installs and becomes the folder name
+    under `addons21/`. It is `hypertts_mcp_bridge`, matching the manual
+    install folder, so a file install replaces that copy in place.
+  - Anki offers an update only when the server's time is newer than the
+    installed `mod`, so `mod` is stamped with the build time. AnkiWeb
+    overwrites it with its own upload time.
+  - `human_version` is never compared by Anki; it only shows in error
+    reports. Keep it in step with `mcp_server/package.json` and
+    `mcpb/manifest.json`.
+  - The manifest was validated against the `_manifest_schema` in the
+    installed Anki's `aqt/addons.py`. Unknown keys are silently dropped.
+  - Adding a new file to `anki_addon/` means adding it to `FILES`.
 
 ## Open items
 
-- Automate the `.ankiaddon` build alongside `mcpb/build.sh`.
 - MCP server: report a friendly "is Anki running?" message when the bridge
   is unreachable, instead of a raw fetch error.
 - MCP server: return tool failures as results with `isError: true` rather
   than throwing JSON-RPC errors.
-- `mcpb/manifest.json`: the `documentation` URL points at the HyperTTS repo;
-  point it at this project once it has a public home.
 
 ## Publishing considerations (deferred)
 

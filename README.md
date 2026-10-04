@@ -51,10 +51,15 @@ how to re-verify them.
 
 ### 1. Install the Anki add-on
 
-1. Find your Anki add-ons folder (Anki menu: Tools → Add-ons → View Files,
-   then go up one level).
-2. Copy the `anki_addon` folder into it and rename it to something like
-   `hypertts_mcp_bridge` (folder name doesn't matter, just avoid spaces).
+1. Build the add-on package (needs only Python 3):
+
+   ```bash
+   python3 build_addon.py   # writes dist/hypertts_mcp_bridge.ankiaddon
+   ```
+
+2. In Anki: **Tools → Add-ons → Install from file...** and pick
+   `dist/hypertts_mcp_bridge.ankiaddon`. Reinstalling a newer build the same
+   way upgrades it in place and keeps your config.
 3. Restart Anki. A tooltip reads
    `HyperTTS MCP Bridge listening on http://127.0.0.1:8766`
    (and the same line prints to the console if you launched Anki from a

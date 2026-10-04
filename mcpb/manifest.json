@@ -8,7 +8,7 @@
   "author": {
     "name": "Byron Appelt"
   },
-  "documentation": "https://github.com/Vocab-Apps/anki-hyper-tts",
+  "documentation": "https://github.com/bappelt/anki-hypertts-mcp",
   "server": {
     "type": "node",
     "entry_point": "server/index.js",
