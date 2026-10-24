@@ -17,5 +17,10 @@ design decisions, testing, open items) before changing code.
   it. New files in `anki_addon/` must be added to its `FILES` list.
 - Real generation overwrites a note field and spends TTS credits. Only run it
   on a throwaway test note (see DEVELOPMENT.md > Testing), never a user's card.
+- When a change is visible to users, add an entry under `## [Unreleased]` in
+  `CHANGELOG.md` in the same commit. Skip CI, refactors and maintainer docs.
+- The version lives only in `mcp_server/package.json`; builds and the server
+  read it from there. Don't hard-code versions elsewhere. To release, follow
+  DEVELOPMENT.md > Releasing.
 - After changing `mcp_server/` or `mcpb/manifest.json`, rebuild with
   `mcpb/build.sh` and reinstall the `.mcpb` in Claude Desktop.

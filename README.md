@@ -64,14 +64,16 @@ used and how to re-verify them.
 
 ### 1. Install the Anki add-on
 
-1. Build the add-on package (needs only Python 3):
+1. Download `hypertts_mcp_bridge-<version>.ankiaddon` from the
+   [latest release](https://github.com/bappelt/anki-hypertts-mcp/releases/latest),
+   or build it yourself (needs only Python 3):
 
    ```bash
-   python3 build_addon.py   # writes dist/hypertts_mcp_bridge.ankiaddon
+   python3 build_addon.py   # writes dist/hypertts_mcp_bridge-<version>.ankiaddon
    ```
 
-2. In Anki: **Tools → Add-ons → Install from file...** and pick
-   `dist/hypertts_mcp_bridge.ankiaddon`. Reinstalling a newer build the same
+2. In Anki: **Tools → Add-ons → Install from file...** and pick that
+   `.ankiaddon` file. Reinstalling a newer build the same
    way upgrades it in place and keeps your config.
 3. Restart Anki. A tooltip reads
    `HyperTTS MCP Bridge listening on http://127.0.0.1:8766`
@@ -91,13 +93,14 @@ Anki must be running (with both add-ons enabled) whenever you use these tools.
 
 #### Option A — Claude Desktop, via the `.mcpb` bundle (recommended)
 
-1. Build the bundle (needs Node + network, one time):
+1. Download `hypertts-mcp-bridge-<version>.mcpb` from the
+   [latest release](https://github.com/bappelt/anki-hypertts-mcp/releases/latest),
+   or build it yourself (needs Node + network):
 
    ```bash
-   ./mcpb/build.sh          # writes dist/hypertts-mcp-bridge.mcpb
+   ./mcpb/build.sh          # writes dist/hypertts-mcp-bridge-<version>.mcpb
    ```
 
-   Or download a prebuilt `hypertts-mcp-bridge.mcpb` if one is published.
 2. In Claude Desktop: **Settings → Extensions**, then drag the `.mcpb` file
    in (or double-click it). Claude Desktop ships its own Node runtime, so
    you don't need Node installed to *run* it.

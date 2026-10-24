@@ -19,6 +19,7 @@
  *                         BRIDGE_API_KEY is set
  */
 
+import { readFileSync } from "node:fs";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -26,6 +27,9 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 
+const { version: VERSION } = JSON.parse(
+  readFileSync(new URL("./package.json", import.meta.url), "utf8")
+);
 const BRIDGE_URL = process.env.HYPERTTS_BRIDGE_URL || "http://127.0.0.1:8766";
 const BRIDGE_KEY = process.env.HYPERTTS_BRIDGE_KEY || null;
 
@@ -96,7 +100,7 @@ async function resolvePresetId(presetArg) {
 }
 
 const server = new Server(
-  { name: "hypertts-mcp-bridge", version: "0.1.0" },
+  { name: "hypertts-mcp-bridge", version: VERSION },
   { capabilities: { tools: {} } }
 );
 

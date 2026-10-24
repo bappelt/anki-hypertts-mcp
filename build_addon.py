@@ -1,4 +1,4 @@
-"""Package the Anki add-on as dist/hypertts_mcp_bridge.ankiaddon.
+"""Package the Anki add-on as dist/hypertts_mcp_bridge-<version>.ankiaddon.
 
     python3 build_addon.py
 
@@ -6,7 +6,9 @@ Generates manifest.json at build time (so "mod" is always fresh) and zips it
 with the files in anki_addon/. Install the result via Anki's
 Tools > Add-ons > Install from file...
 
-The Claude Desktop bundle is built separately by mcpb/build.sh.
+The version comes from mcp_server/package.json, the project's single source
+of truth for it. The Claude Desktop bundle is built separately by
+mcpb/build.sh.
 """
 
 import json
@@ -16,7 +18,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 SRC = ROOT / "anki_addon"
-OUT = ROOT / "dist" / "hypertts_mcp_bridge.ankiaddon"
+VERSION = json.loads((ROOT / "mcp_server" / "package.json").read_text())["version"]
+OUT = ROOT / "dist" / f"hypertts_mcp_bridge-{VERSION}.ankiaddon"
 
 FILES = ["__init__.py", "config.json", "config.md"]
 
@@ -30,8 +33,7 @@ manifest = {
     "mod": int(time.time()),
     "min_point_version": 231000,  # Anki 23.10
     # Cosmetic only: Anki never compares this; it appears in error reports.
-    # Keep in step with mcp_server/package.json and mcpb/manifest.json.
-    "human_version": "0.1.0",
+    "human_version": VERSION,
     "homepage": "https://github.com/bappelt/anki-hypertts-mcp",
 }
 

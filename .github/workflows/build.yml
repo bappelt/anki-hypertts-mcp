@@ -1,8 +1,13 @@
 name: Build packages
 
 # Builds both installable packages and attaches them to the run as artifacts:
-#   dist/hypertts_mcp_bridge.ankiaddon  (Anki add-on, via build_addon.py)
-#   dist/hypertts-mcp-bridge.mcpb       (Claude Desktop bundle, via mcpb/build.sh)
+#   dist/hypertts_mcp_bridge-<version>.ankiaddon  (Anki add-on, via build_addon.py)
+#   dist/hypertts-mcp-bridge-<version>.mcpb       (Claude Desktop bundle, via mcpb/build.sh)
+#
+# <version> comes from mcp_server/package.json. Pushing a tag v<version>
+# also publishes both files as a GitHub Release, with that version's section
+# of CHANGELOG.md as the release notes. The run fails if the tag doesn't
+# match package.json or CHANGELOG.md has no "## [<version>]" section.
 
 on:
   push:
@@ -17,6 +22,8 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@v7
 
@@ -30,6 +37,21 @@ jobs:
           cache: npm
           cache-dependency-path: mcp_server/package-lock.json
 
+      - name: Read version
+        id: version
+        run: |
+          version="$(node -p "require('./mcp_server/package.json').version")"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Version: $version"
+          if [[ "$GITHUB_REF_TYPE" == "tag" && "$GITHUB_REF_NAME" != "v$version" ]]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match mcp_server/package.json version $version (expected v$version)"
+            exit 1
+          fi
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]] && ! grep -qF "## [$version]" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md has no '## [$version]' section for this release"
+            exit 1
+          fi
+
       - name: Check add-on syntax
         run: python -m py_compile anki_addon/__init__.py
 
@@ -41,12 +63,48 @@ jobs:
 
       - uses: actions/upload-artifact@v7
         with:
-          name: hypertts_mcp_bridge.ankiaddon
-          path: dist/hypertts_mcp_bridge.ankiaddon
+          name: hypertts_mcp_bridge-${{ steps.version.outputs.version }}.ankiaddon
+          path: dist/hypertts_mcp_bridge-${{ steps.version.outputs.version }}.ankiaddon
           if-no-files-found: error
 
       - uses: actions/upload-artifact@v7
         with:
-          name: hypertts-mcp-bridge.mcpb
-          path: dist/hypertts-mcp-bridge.mcpb
+          name: hypertts-mcp-bridge-${{ steps.version.outputs.version }}.mcpb
+          path: dist/hypertts-mcp-bridge-${{ steps.version.outputs.version }}.mcpb
           if-no-files-found: error
+
+  release:
+    needs: build
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          # A version with a hyphen (e.g. 0.2.0-beta.1) is published as a prerelease.
+          prerelease=()
+          [[ "$VERSION" == *-* ]] && prerelease=(--prerelease)
+          # Release notes: this version's CHANGELOG.md section, without its
+          # heading, up to the next "## [" heading or the link references.
+          awk -v head="## [$VERSION]" '
+            index($0, head) == 1 { on = 1; next }
+            on && (/^## \[/ || /^\[[^]]+\]: /) { exit }
+            on
+          ' CHANGELOG.md > release-notes.md
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "v$VERSION" \
+            --notes-file release-notes.md \
+            --verify-tag \
+            "${prerelease[@]}"

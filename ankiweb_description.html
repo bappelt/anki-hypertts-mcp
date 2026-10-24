@@ -1,0 +1,74 @@
+<p>Lets <b>Claude</b> (or any other MCP client) add audio to your notes using your
+  <a href="https://ankiweb.net/shared/info/111623432">HyperTTS</a> presets. Ask Claude to generate audio for a note,
+  and the bridge does exactly what HyperTTS's own <b>Apply To Notes</b> button does: it reads the preset's source
+  field, generates speech with the preset's voice, and puts the sound into the preset's target field.
+</p>
+
+<p>Presets stay in HyperTTS: set up voices and fields there as usual, then use them from Claude.</p>
+
+<h3>What you need</h3>
+<ul>
+  <li><b>HyperTTS</b>, installed and enabled, with at least one preset.</li>
+  <li><b>This add-on.</b></li>
+  <li><b>The HyperTTS MCP Bridge extension</b> for Claude Desktop (the <code>.mcpb</code> file), from the
+    <a href="https://github.com/bappelt/anki-hypertts-mcp/releases/latest">latest release on GitHub</a>.
+    Other MCP clients can run the server directly; see the project page.
+  </li>
+  <li><b>An Anki MCP server</b>, such as
+    <a href="https://ankiweb.net/shared/info/124672614">Anki MCP Server - AI Assistant Integration</a>, so Claude
+    can find your notes. Technically it's optional: the bridge identifies notes only by their note id, so without
+    one you'd have to give Claude each note's id yourself, copied from Anki's Browser.
+  </li>
+</ul>
+
+<p>Anki must be running with a profile open whenever Claude uses the bridge.</p>
+
+<h3>Setup</h3>
+<ul>
+  <li>Install this add-on and restart Anki. A tooltip confirms the bridge is listening.</li>
+  <li>In Claude Desktop, open <b>Settings &rarr; Extensions</b> and drag in the <code>.mcpb</code> file.</li>
+  <li>Ask Claude something like <i>"Add pronunciation audio to my 'good morning' card using my Basic Ukrainian preset."</i></li>
+</ul>
+
+<h3>Tools Claude gets</h3>
+<ul>
+  <li><b>list_hypertts_presets</b>: lists your HyperTTS presets.</li>
+  <li><b>generate_hypertts_audio</b>: generates audio for a note with a preset, chosen by name or id. It can also
+    speak different text than the note's source field.
+  </li>
+</ul>
+
+<h3>Configuration</h3>
+<p>Go to <b>Tools &rarr; Add-ons &rarr; HyperTTS MCP Bridge &rarr; Config</b>, and restart Anki after changes.</p>
+<ul>
+  <li><b>host</b>: keep at <code>127.0.0.1</code>.</li>
+  <li><b>port</b>: default <code>8766</code>. If you change it, change the Bridge URL in the extension's settings
+    to match.
+  </li>
+  <li><b>api_key</b>: optional. Set it to a long random string, and enter the same value as the extension's Bridge
+    API key.
+  </li>
+  <li><b>max_text_override_chars</b>: the longest custom text Claude may send, default <code>2000</code>.</li>
+</ul>
+
+<h3>Privacy and security</h3>
+<p>The bridge only accepts connections from your own computer, and it refuses requests from web browsers, so
+  websites can't use it. Text is sent to whichever text-to-speech service your HyperTTS preset uses, exactly as when
+  you use HyperTTS directly.
+</p>
+
+<h3>Compatibility</h3>
+<p>Requires Anki 23.10 or later. Tested with HyperTTS 3.7.1.</p>
+<p>The bridge works by calling HyperTTS's internals, which aren't a public interface, so a HyperTTS update could
+  break it. If audio generation stops working after you update HyperTTS, check for an update to this add-on. This is
+  an independent project, not made by or affiliated with the HyperTTS developers.
+</p>
+
+<h3>Source Code</h3>
+<p>
+  <a href="https://github.com/bappelt/anki-hypertts-mcp">github.com/bappelt/anki-hypertts-mcp</a>
+</p>
+
+<a href="https://buymeacoffee.com/bappelt">
+  <img src="https://media.giphy.com/media/o7RZbs4KAA6tvM4H6j/giphy.gif"/>
+</a>

@@ -155,18 +155,76 @@ exist inside a running Anki, so testing is manual against a live Anki.
 
 ## Packaging
 
-GitHub Actions (`.github/workflows/build.yml`) builds both packages on every
-push to `main`, every `v*` tag, every pull request, and on manual runs. Each
-run attaches `hypertts_mcp_bridge.ankiaddon` and `hypertts-mcp-bridge.mcpb`
-as downloadable artifacts on its run page. To build locally instead:
+### Versioning
+
+`version` in `mcp_server/package.json` is the **single source of truth**.
+`build_addon.py` writes it into the add-on's `human_version`, `mcpb/build.sh`
+writes it into the staged bundle manifest (the `version` in
+`mcpb/manifest.json` is overwritten at build time), the MCP server reports it
+to clients, and both package file names include it.
+
+### Releasing
+
+In Claude Code, `/release` (optionally `/release patch`, `/release 0.2.0`,
+...) runs the steps below with preflight checks and watches the result; see
+`.claude/skills/release/SKILL.md`. By hand:
+
+1. In `CHANGELOG.md`, rename `## [Unreleased]` to
+   `## [0.2.0] - <date>`, add a fresh empty `## [Unreleased]` above it, and
+   update the link references at the bottom.
+2. Bump the version (updates `package.json` and `package-lock.json`):
+
+   ```bash
+   cd mcp_server && npm version 0.2.0 --no-git-tag-version
+   ```
+
+3. Commit, then tag and push:
+
+   ```bash
+   git tag v0.2.0 && git push && git push origin v0.2.0
+   ```
+
+GitHub Actions (`.github/workflows/build.yml`) then builds both packages and
+publishes them as a GitHub Release named `v0.2.0`, using the `## [0.2.0]`
+section of `CHANGELOG.md` as the release notes. The run fails if the tag
+doesn't match `package.json` (`v` + version) or the changelog has no section
+for that version. A version containing a hyphen, such as
+`0.2.0-beta.1`, is published as a prerelease.
+
+#### Publishing to AnkiWeb
+
+AnkiWeb has no upload API, so this step is manual, after the GitHub Release
+exists:
+
+1. Download `hypertts_mcp_bridge-<version>.ankiaddon` from the release.
+2. Go to <https://ankiweb.net/shared/upload> (for later releases, use the
+   upload link on the add-on's own AnkiWeb page so it updates the existing
+   listing instead of creating a new one).
+3. Upload the file, and paste `ankiweb_description.html` into the
+   description. Update that file in the repo first if the release changes
+   anything it describes, so the repo stays the source of the listing.
+
+AnkiWeb installs the add-on into a folder named after its numeric AnkiWeb id,
+not `hypertts_mcp_bridge`, and overwrites `mod` with its upload time. A
+copy installed from a `.ankiaddon` file and one installed from AnkiWeb are
+therefore separate add-ons to Anki; don't have both enabled, or two bridges
+will compete for the port.
+
+The same workflow also builds on every push to `main`, every pull request,
+and manual runs, attaching the packages to the run page as artifacts that
+GitHub keeps for 90 days. Those builds carry the current `package.json`
+version, so they aren't distinguishable by name from the release they
+follow; use the run page to tell which commit they came from.
+
+### Building locally
 
 - **Claude Desktop bundle:** `./mcpb/build.sh` stages `manifest.json` plus the
   server with lockfile-exact production `node_modules`, validates, and packs
-  to `dist/hypertts-mcp-bridge.mcpb`. The bundle is unsigned; signing is
+  to `dist/hypertts-mcp-bridge-<version>.mcpb`. The bundle is unsigned; signing is
   optional and needs a certificate. `.mcpb` is Claude-Desktop-only; other
   clients run `mcp_server/index.js` directly.
 - **Anki add-on:** `python3 build_addon.py` writes
-  `dist/hypertts_mcp_bridge.ankiaddon`, following the pattern of
+  `dist/hypertts_mcp_bridge-<version>.ankiaddon`, following the pattern of
   [anki-quick-image-search](https://github.com/bappelt/anki-quick-image-search).
   It zips the files listed in `FILES` and generates `manifest.json` at build
   time, so there is no static manifest in `anki_addon/`. Things to know:
@@ -177,8 +235,7 @@ as downloadable artifacts on its run page. To build locally instead:
     installed `mod`, so `mod` is stamped with the build time. AnkiWeb
     overwrites it with its own upload time.
   - `human_version` is never compared by Anki; it only shows in error
-    reports. Keep it in step with `mcp_server/package.json` and
-    `mcpb/manifest.json`.
+    reports. It is read from `mcp_server/package.json`.
   - The manifest was validated against the `_manifest_schema` in the
     installed Anki's `aqt/addons.py`. Unknown keys are silently dropped.
   - Adding a new file to `anki_addon/` means adding it to `FILES`.
