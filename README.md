@@ -107,9 +107,11 @@ Anki must be running (with both add-ons enabled) whenever you use these tools.
    ./mcpb/build.sh          # writes dist/hypertts-mcp-bridge-<version>.mcpb
    ```
 
-2. In Claude Desktop: **Settings → Extensions**, then drag the `.mcpb` file
-   in (or double-click it). Claude Desktop ships its own Node runtime, so
-   you don't need Node installed to *run* it.
+2. Double-click the `.mcpb` file; Claude Desktop opens and asks to install
+   it. (Or drag the file into Claude Desktop's **Settings → Extensions**.)
+   Claude Desktop ships its own Node runtime, so you don't need Node
+   installed to *run* it. To upgrade later, install the newer `.mcpb` the
+   same way; it replaces the old version.
 3. In the extension's settings, leave **Bridge URL** at
    `http://127.0.0.1:8766` unless you changed `host`/`port` in the Anki
    add-on config. Fill in **Bridge API key** only if you set `"api_key"`
