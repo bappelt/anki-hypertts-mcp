@@ -114,8 +114,15 @@ exist inside a running Anki, so testing is manual against a live Anki.
 ### Live test procedure
 
 1. Install the add-on into Anki with HyperTTS installed (see README), and
-   start Anki. For quick iteration, copying `anki_addon/`'s files into
-   `addons21/hypertts_mcp_bridge/` and restarting also works.
+   start Anki. For quick iteration, copy `anki_addon/`'s changed files into
+   the installed bridge's folder under `addons21/` and restart. That folder
+   is `1885999094` for an AnkiWeb install (installing an AnkiWeb update
+   overwrites local changes) and `hypertts_mcp_bridge` for one installed
+   from a file. Don't create the other folder next to it: Anki would load
+   both as separate add-ons, the one that sorts first (`1885999094`) would
+   take the port, and the other would only show a "could not start its HTTP
+   server" warning, so requests would silently hit the old code. To test a
+   `.ankiaddon` build, disable or remove the AnkiWeb copy first.
 2. Exercise the bridge with the curl commands in the README, including the
    error paths: unknown note id, blank `text_override`, missing `note_id`.
    Each should return 400 with a readable message.
