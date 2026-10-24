@@ -8,6 +8,9 @@ Each release's section becomes its GitHub release notes.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-24
+
 - Initial release.
 
-[Unreleased]: https://github.com/bappelt/anki-hypertts-mcp/commits/main
+[Unreleased]: https://github.com/bappelt/anki-hypertts-mcp/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/bappelt/anki-hypertts-mcp/releases/tag/v1.0.0

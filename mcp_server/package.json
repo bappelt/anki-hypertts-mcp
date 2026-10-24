@@ -1,6 +1,6 @@
 {
   "name": "hypertts-mcp-bridge",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "MCP server exposing HyperTTS preset audio generation, via the local Anki add-on bridge",
   "type": "module",
   "main": "index.js",
