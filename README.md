@@ -182,3 +182,7 @@ web pages open in your browser can't drive it. It has no built-in rate limiting 
 "generate audio into the field a preset targets," so treat it like
 AnkiConnect: fine for local personal use, not something to expose over a
 network.
+
+## Show Your Support
+
+[![Buy me a coffee](https://media.giphy.com/media/o7RZbs4KAA6tvM4H6j/giphy.gif)](https://buymeacoffee.com/bappelt)
