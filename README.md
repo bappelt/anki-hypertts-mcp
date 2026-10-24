@@ -64,7 +64,11 @@ used and how to re-verify them.
 
 ### 1. Install the Anki add-on
 
-1. Download `hypertts_mcp_bridge-<version>.ankiaddon` from the
+1. Install it from [AnkiWeb](https://ankiweb.net/shared/info/1885999094)
+   (recommended): in Anki, **Tools → Add-ons → Get Add-ons...**, and paste
+   the code `1885999094`. Updates then arrive through **Check for Updates**.
+2. Or install it from a file: download
+   `hypertts_mcp_bridge-<version>.ankiaddon` from the
    [latest release](https://github.com/bappelt/anki-hypertts-mcp/releases/latest),
    or build it yourself (needs only Python 3):
 
@@ -72,9 +76,11 @@ used and how to re-verify them.
    python3 build_addon.py   # writes dist/hypertts_mcp_bridge-<version>.ankiaddon
    ```
 
-2. In Anki: **Tools → Add-ons → Install from file...** and pick that
-   `.ankiaddon` file. Reinstalling a newer build the same
-   way upgrades it in place and keeps your config.
+   Then in Anki: **Tools → Add-ons → Install from file...** and pick that
+   `.ankiaddon` file. Reinstalling a newer build the same way upgrades it in
+   place and keeps your config. Use one method or the other: Anki treats an
+   AnkiWeb install and a file install as separate add-ons, and two copies
+   would compete for the same port.
 3. Restart Anki. A tooltip reads
    `HyperTTS MCP Bridge listening on http://127.0.0.1:8766`
    (and the same line prints to the console if you launched Anki from a
