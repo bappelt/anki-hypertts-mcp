@@ -4,7 +4,7 @@ Read `README.md` (setup, HTTP API) and `DEVELOPMENT.md` (HyperTTS internals,
 design decisions, testing, open items) before changing code.
 
 - `anki_addon/__init__.py` calls **unpublished HyperTTS internals**, verified
-  against HyperTTS 3.6.0. Before changing those calls, re-read the installed
+  against HyperTTS 3.7.1. Before changing those calls, re-read the installed
   HyperTTS source at
   `~/Library/Application Support/Anki2/addons21/111623432/hypertts_addon/hypertts.py`.
 - The add-on can't be imported outside Anki (`aqt`/`anki`). Test against a live

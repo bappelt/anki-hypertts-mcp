@@ -12,7 +12,8 @@ It works by importing the already-running HyperTTS add-on's live
 onto sys.path at startup, so `import hypertts_addon` works from any other
 add-on without needing to know HyperTTS's numeric add-on id).
 
-This was written against HyperTTS v3.6.0 (github.com/Vocab-Apps/anki-hyper-tts).
+Written against HyperTTS v3.6.0 and re-verified on v3.7.1
+(github.com/Vocab-Apps/anki-hyper-tts).
 The three calls this relies on are:
 
     hypertts_addon.hyper_tts.get_preset_list()          -> list[PresetInfo(id, name)]
@@ -27,7 +28,8 @@ raising ImportError/AttributeError with a clear message rather than failing
 silently - check hypertts_addon/hypertts.py in your installed copy if that
 happens, and update HYPERTTS_HTTP_HANDLERS below.
 
-SECURITY: the server only binds to 127.0.0.1. Set "api_key" in this add-on's
+SECURITY: the server only binds to 127.0.0.1, and it refuses any request
+carrying an Origin header (i.e. from a web browser). Set "api_key" in this add-on's
 config (Tools > Add-ons > HyperTTS MCP Bridge > Config, or config.json) to a
 non-empty string to require an "X-Api-Key: <value>" header on every request.
 """
@@ -222,6 +224,16 @@ class BridgeHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _check_origin(self):
+        # Browsers attach an Origin header to cross-site requests (and to any
+        # POST); non-browser clients like the MCP server send none. Refusing
+        # every request that carries one stops web pages from driving the
+        # bridge, including "simple" text/plain POSTs that skip CORS preflight.
+        if self.headers.get("Origin") is not None:
+            self._send_json(403, {"ok": False, "error": "browser requests are not allowed"})
+            return False
+        return True
+
     def _check_auth(self):
         if _api_key:
             presented = self.headers.get("X-Api-Key", "")
@@ -232,7 +244,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
         return True
 
     def do_GET(self):
-        if not self._check_auth():
+        if not (self._check_origin() and self._check_auth()):
             return
         if self.path == "/presets":
             try:
@@ -243,7 +255,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
         self._send_json(404, {"ok": False, "error": "unknown endpoint"})
 
     def do_POST(self):
-        if not self._check_auth():
+        if not (self._check_origin() and self._check_auth()):
             return
         if self.path == "/generate":
             length = int(self.headers.get("Content-Length", 0))

@@ -19,8 +19,11 @@ GUI.
 ## The HyperTTS internals we depend on
 
 These are **internal, unpublished APIs**. They were verified by reading
-HyperTTS's source at version **3.6.0** (`hypertts_addon/version.py`:
-`ANKI_HYPER_TTS_VERSION = '3.6.0'`), not guessed.
+HyperTTS's source at version **3.6.0**, then re-verified at **3.7.1**
+(`hypertts_addon/version.py`: `ANKI_HYPER_TTS_VERSION='3.7.1'`), not guessed.
+Between those versions, both `__init__.py` files and every item below were
+unchanged; the 3.7.x changes were confined to TTS services and voice
+filtering.
 
 - HyperTTS's repo-root `__init__.py` does `sys.path.insert(0, addon_dir)`
   before `import hypertts_addon`. That makes `hypertts_addon` importable as a
@@ -81,6 +84,14 @@ from outside, so this project should not be submitted there.
   uses. A `ThreadingHTTPServer` runs on a daemon thread, bound to
   `127.0.0.1:8766` by default. Port 8766 is chosen to avoid AnkiConnect's
   8765.
+- **No browser callers:** every request with an `Origin` header gets a 403,
+  checked before the API key. Browsers attach that header to cross-site
+  requests and to every POST; Node's `fetch` and curl send none. Without
+  this, any web page could fire a `text/plain` POST at `/generate`, which
+  skips CORS preflight. AnkiConnect uses an origin allowlist instead because
+  it has browser clients; this bridge has none. There is no `Host` header
+  check, so a DNS-rebinding page's same-origin GET of `/presets` (which
+  carries no `Origin`) would still be answered; set `api_key` to close that.
 - **Lifecycle hooks:** started on `profile_did_open`, stopped on
   `profile_will_close`, so the server only runs while a collection is open.
 - **Threading:** `process_note_audio` runs on the HTTP handler's thread, not
@@ -137,8 +148,17 @@ exist inside a running Anki, so testing is manual against a live Anki.
   error paths behaved as documented. Generation succeeded via the MCP tool
   with two different presets (one ElevenLabs), and 20 concurrent `/presets`
   plus 3 concurrent `/generate` calls succeeded.
+- 2026-10-24: re-verified on HyperTTS 3.7.1 after diffing the internals
+  above against 3.6.0. On a throwaway note, generation via the MCP tool
+  succeeded with both presets, including ElevenLabs, whose service 3.7.0
+  refactored; each wrote one sound tag and a valid MP3.
 
 ## Packaging
+
+GitHub Actions (`.github/workflows/build.yml`) builds both packages on every
+push to `main`, every `v*` tag, every pull request, and on manual runs. Each
+run attaches `hypertts_mcp_bridge.ankiaddon` and `hypertts-mcp-bridge.mcpb`
+as downloadable artifacts on its run page. To build locally instead:
 
 - **Claude Desktop bundle:** `./mcpb/build.sh` stages `manifest.json` plus the
   server with lockfile-exact production `node_modules`, validates, and packs

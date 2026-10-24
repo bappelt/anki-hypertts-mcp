@@ -13,39 +13,52 @@ usual, then drive them remotely.
 ## How it works
 
 ```
-Claude (MCP client)
-   |  MCP tool call
-   v
-mcp_server/index.js  (Node, stdio MCP server)
-   |  HTTP request to 127.0.0.1:8766
-   v
-anki_addon/           (runs inside Anki, as a second add-on)
-   |  in-process Python call
-   v
-hypertts_addon.hyper_tts   (the HyperTTS add-on's own live object)
++- Claude Desktop ---------------------------------------------------+
+|                                                                    |
+|  +- HyperTTS MCP Bridge extension (.mcpb) ----------------------+  |
+|  |              server/index.js  (Node MCP server)              |  |
+|  |            run by Claude Desktop's built-in Node             |  |
+|  |                              |                               |  |
+|  +------------------------------|-------------------------------+  |
+|                                 |                                  |
++---------------------------------|----------------------------------+
+                                  |  HTTP to 127.0.0.1:8766
++- Anki --------------------------|----------------------------------+
+|                                 |                                  |
+|  +- HyperTTS MCP Bridge add-on -|-------------------------------+  |
+|  |                              v                               |  |
+|  |               hypertts_mcp_bridge/__init__.py                |  |
+|  |                   (built from anki_addon/)                   |  |
+|  |                              |                               |  |
+|  +------------------------------|-------------------------------+  |
+|                                 |  in-process Python call          |
+|  +- HyperTTS add-on ------------|-------------------------------+  |
+|  |                              v                               |  |
+|  |                   hypertts_addon.hyper_tts                   |  |
+|  |                 (HyperTTS's own live object)                 |  |
+|  |                              |                               |  |
+|  +------------------------------|-------------------------------+  |
+|                                 |                                  |
++---------------------------------|----------------------------------+
+                                  |  HTTPS, for most voices
+                                  v
+                TTS service (Google, ElevenLabs, ...)
 ```
 
-The Anki add-on doesn't reimplement anything — it imports HyperTTS's own
-running singleton (`hypertts_addon.hyper_tts`) and calls the exact same
-three methods HyperTTS's own "Apply To Notes" button calls:
-`get_preset_list()`, `load_preset()`, `process_note_audio()`. This was
-checked against HyperTTS v3.6.0's source
-(https://github.com/Vocab-Apps/anki-hyper-tts).
+This shows the Claude Desktop setup. With Claude Code or another MCP client,
+the client runs `mcp_server/index.js` directly from this project with your
+own Node install instead of from the `.mcpb` bundle.
 
-**Caveat:** these are HyperTTS's internal APIs, not a published/stable
-public interface. A future HyperTTS release could rename or restructure
-them. If the bridge starts erroring after a HyperTTS update, open
-`hypertts_addon/hypertts.py` in your installed copy of HyperTTS
-(add-on folder `111623432`) and check whether `get_preset_list`,
-`load_preset`, or `process_note_audio` changed shape, then adjust
-`anki_addon/__init__.py` to match. The add-on folder lives at:
+The bridge add-on calls into HyperTTS directly, doing exactly what
+HyperTTS's own "Apply To Notes" button does.
 
-- macOS: `~/Library/Application Support/Anki2/addons21/111623432/`
-- Linux: `~/.local/share/Anki2/addons21/111623432/`
-- Windows: `%APPDATA%\Anki2\addons21\111623432\`
+**Compatibility:** tested with HyperTTS 3.7.1. The bridge relies on
+HyperTTS internals rather than a public API, so a future HyperTTS update
+could break it. If audio generation starts failing after a HyperTTS
+update, check for a newer version of this bridge.
 
-See [DEVELOPMENT.md](DEVELOPMENT.md) for exactly which internals are used and
-how to re-verify them.
+Maintainers: see [DEVELOPMENT.md](DEVELOPMENT.md) for which internals are
+used and how to re-verify them.
 
 ## Setup
 
@@ -146,13 +159,15 @@ Every response is JSON with an `"ok"` field; failures also carry `"error"`.
 | 200 | Success. `/generate` also returns `target_field`, `source_text`, `processed_text`, `sound_file`. |
 | 400 | Caller mistake: malformed body, no such note, unknown preset, the note lacks the preset's fields, empty source text, or a `text_override` that is blank or over `max_text_override_chars`. |
 | 401 | `api_key` is set and `X-Api-Key` is missing or wrong. |
+| 403 | The request came from a web browser (it has an `Origin` header). |
 | 404 | Unknown endpoint. |
 | 500 | Anything else, such as a TTS service failure or HyperTTS not being enabled. |
 
 ## Security
 
 The HTTP server binds to `127.0.0.1` only — nothing outside your machine
-can reach it. It has no built-in rate limiting or write scoping beyond
+can reach it. It also refuses any request carrying an `Origin` header, so
+web pages open in your browser can't drive it. It has no built-in rate limiting or write scoping beyond
 "generate audio into the field a preset targets," so treat it like
 AnkiConnect: fine for local personal use, not something to expose over a
 network.

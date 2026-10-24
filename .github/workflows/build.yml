@@ -1,0 +1,52 @@
+name: Build packages
+
+# Builds both installable packages and attaches them to the run as artifacts:
+#   dist/hypertts_mcp_bridge.ankiaddon  (Anki add-on, via build_addon.py)
+#   dist/hypertts-mcp-bridge.mcpb       (Claude Desktop bundle, via mcpb/build.sh)
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.x"
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: mcp_server/package-lock.json
+
+      - name: Check add-on syntax
+        run: python -m py_compile anki_addon/__init__.py
+
+      - name: Build Anki add-on
+        run: python build_addon.py
+
+      - name: Build Claude Desktop bundle
+        run: ./mcpb/build.sh
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: hypertts_mcp_bridge.ankiaddon
+          path: dist/hypertts_mcp_bridge.ankiaddon
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: hypertts-mcp-bridge.mcpb
+          path: dist/hypertts-mcp-bridge.mcpb
+          if-no-files-found: error
