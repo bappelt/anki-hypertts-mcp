@@ -1,0 +1,8 @@
+{
+  "addon_id": null,
+  "title": "HyperTTS MCP Bridge: generate HyperTTS audio from Claude",
+  "tags": "hypertts tts audio pronunciation claude mcp ai",
+  "support_page": "https://github.com/bappelt/anki-hypertts-mcp/issues",
+  "min_anki_version": "23.10",
+  "max_anki_version_tested": "25.09.4"
+}

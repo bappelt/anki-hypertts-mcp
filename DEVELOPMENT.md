@@ -193,16 +193,26 @@ for that version. A version containing a hyphen, such as
 
 #### Publishing to AnkiWeb
 
-AnkiWeb has no upload API, so this step is manual, after the GitHub Release
-exists:
+AnkiWeb has no upload API, so the `.ankiaddon` goes up through its web form.
+`/release` does this after the GitHub Release exists, driving the user's
+logged-in browser with the Claude in Chrome tools and asking before it clicks
+Save; without those tools it hands over a checklist. By hand:
 
-1. Download `hypertts_mcp_bridge-<version>.ankiaddon` from the release.
-2. Go to <https://ankiweb.net/shared/upload> (for later releases, use the
-   upload link on the add-on's own AnkiWeb page so it updates the existing
-   listing instead of creating a new one).
-3. Upload the file, and paste `ankiweb_description.html` into the
-   description. Update that file in the repo first if the release changes
-   anything it describes, so the repo stays the source of the listing.
+1. Download `hypertts_mcp_bridge-<version>.ankiaddon` from the GitHub
+   Release, so AnkiWeb serves the same build as GitHub.
+2. Open <https://ankiweb.net/shared/upload> for the first upload, or
+   `https://ankiweb.net/shared/upload?id=<addon_id>` afterwards. The plain
+   upload page always creates a new listing.
+3. Fill the form from `ankiweb.json` (title, tags, support page, and the
+   branch's minimum and tested-maximum Anki versions), attach the file to
+   Branch 1, paste `ankiweb_description.html` into the description, and Save.
+4. After the first upload, set `addon_id` in `ankiweb.json` from the info
+   page URL (`/shared/info/<id>`), and add the AnkiWeb install code to the
+   README.
+
+The repo is the source of the listing: change `ankiweb_description.html` or
+`ankiweb.json` there first, then upload. Keep the description ASCII-only
+(HTML entities such as `&rarr;`); a literal arrow once rendered as `â†’`.
 
 AnkiWeb installs the add-on into a folder named after its numeric AnkiWeb id,
 not `hypertts_mcp_bridge`, and overwrites `mod` with its upload time. A
