@@ -220,7 +220,8 @@ follow; use the run page to tell which commit they came from.
 
 - **Claude Desktop bundle:** `./mcpb/build.sh` stages `manifest.json` plus the
   server with lockfile-exact production `node_modules`, validates, and packs
-  to `dist/hypertts-mcp-bridge-<version>.mcpb`. The bundle is unsigned; signing is
+  to `dist/hypertts-mcp-bridge-<version>.mcpb`. The `mcpb` CLI version is
+  pinned by `MCPB_VERSION` in that script; bump it deliberately. The bundle is unsigned; signing is
   optional and needs a certificate. `.mcpb` is Claude-Desktop-only; other
   clients run `mcp_server/index.js` directly.
 - **Anki add-on:** `python3 build_addon.py` writes

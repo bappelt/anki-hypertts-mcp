@@ -13,6 +13,12 @@
 # for `npm ci` and `npx @anthropic-ai/mcpb`.
 set -euo pipefail
 
+# Pinned so a new (or compromised) mcpb release can't change what goes into a
+# release bundle unnoticed. To upgrade: check `npm view @anthropic-ai/mcpb
+# version`, update this, rebuild, and confirm the bundle installs in Claude
+# Desktop.
+MCPB_VERSION="2.1.2"
+
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # repo root
 stage="$here/dist/mcpb-stage"
 version="$(node -p "require('$here/mcp_server/package.json').version")"
@@ -34,8 +40,8 @@ cp "$here/mcp_server/package-lock.json" "$stage/server/package-lock.json"
 
 ( cd "$stage/server" && npm ci --omit=dev --no-audit --no-fund )
 
-npx --yes @anthropic-ai/mcpb@latest validate "$stage/manifest.json"
-npx --yes @anthropic-ai/mcpb@latest pack "$stage" "$out"
+npx --yes "@anthropic-ai/mcpb@$MCPB_VERSION" validate "$stage/manifest.json"
+npx --yes "@anthropic-ai/mcpb@$MCPB_VERSION" pack "$stage" "$out"
 
 echo
 echo "built: $out"
